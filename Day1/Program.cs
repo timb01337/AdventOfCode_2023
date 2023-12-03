@@ -2,11 +2,8 @@
 
 using System;
 
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
-Console.WriteLine("Hello, World!");
+
+var counter = 10;
+
+for(var i = 0; i < counter; i++)
+    Console.WriteLine("Hello, World!");
