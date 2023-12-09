@@ -1,21 +1,18 @@
-﻿var lines = File.ReadLines(@"E:\Dev\AdventOfCode_2023\Day3\input.txt").ToList();
+﻿using Day3;
 
-//fuck: in the moment i finished this nonsense i had an idea for a way better solution
+var lines = File.ReadLines(@"E:\Dev\AdventOfCode_2023\Day3\Input.txt").ToList();
 
 var charArray = new char[lines.Count, lines.Select(str => str.Length).Max()];
-
 for (var i = 0; i < lines.Count; i++)
-{
     for (var j = 0; j < lines[i].Length; j++)
         charArray[i, j] = lines[i][j];
-}
 
-var sum = 0;
+var relevantEntries = new List<SchemaEntry>();
 
 for (var i = 0; i < charArray.GetLength(0); i++)
 {
     var currentNumber = string.Empty;
-    var adjacentSymbolFound = false;
+    var schemaEntry = new SchemaEntry();
 
     for (var j = 0; j < charArray.GetLength(1); j++)
     {
@@ -23,80 +20,9 @@ for (var i = 0; i < charArray.GetLength(0); i++)
 
         if (char.IsDigit(entry))
         {
-            //only if we didn't already find a adjacent symbol
-            if (!adjacentSymbolFound)
-            {
-                //check if there is a adjacent symbol;
-                bool checkRightIsLegit = false,
-                    checkLeftIsLegit = false,
-                    checkTopIsLegit = false,
-                    checkBottomIsLegit = false;
+            if (currentNumber == string.Empty)
+                schemaEntry.Start = (i, j);
 
-                //check to the right
-                if (j + 1 < charArray.GetLength(1))
-                {
-                    if (IsSymbol(charArray[i, j + 1]))
-                        adjacentSymbolFound = true;
-
-                    checkRightIsLegit = true;
-                }
-
-                //check to the left
-                if (j - 1 > 0)
-                {
-                    if (IsSymbol(charArray[i, j - 1]))
-                        adjacentSymbolFound = true;
-
-                    checkLeftIsLegit = true;
-                }
-
-                //check to the top
-                if (i - 1 > 0)
-                {
-                    if (IsSymbol(charArray[i - 1, j]))
-                        adjacentSymbolFound = true;
-
-                    checkTopIsLegit = true;
-                }
-
-                //check to the bottom
-                if (i + 1 < charArray.GetLength(0))
-                {
-                    if (IsSymbol(charArray[i + 1, j]))
-                        adjacentSymbolFound = true;
-
-                    checkBottomIsLegit = true;
-                }
-
-                //check top left
-                if (checkTopIsLegit && checkLeftIsLegit)
-                {
-                    if (IsSymbol(charArray[i - 1, j - 1]))
-                        adjacentSymbolFound = true;
-                }
-
-                //check top right
-                if (checkTopIsLegit && checkRightIsLegit)
-                {
-                    if (IsSymbol(charArray[i - 1, j + 1]))
-                        adjacentSymbolFound = true;
-                }
-
-                //check bottom left
-                if (checkBottomIsLegit && checkLeftIsLegit)
-                {
-                    if (IsSymbol(charArray[i + 1, j - 1]))
-                        adjacentSymbolFound = true;
-                }
-
-                //check bottom right
-                if (checkBottomIsLegit && checkRightIsLegit)
-                {
-                    if (IsSymbol(charArray[i + 1, j + 1]))
-                        adjacentSymbolFound = true;
-                }
-            }
-            
             currentNumber += entry;
 
             //check if the current number is finished
@@ -108,22 +34,42 @@ for (var i = 0; i < charArray.GetLength(0); i++)
             }
             else
                 currentNumberIsFinished = true;
-
-            //if the current number is finished we have to reset stuff
+            
             if (currentNumberIsFinished)
             {
-                //if currentNumberIsFinished and we found a symbol around the number we add to the sum
-                if (adjacentSymbolFound)
-                    sum += int.Parse(currentNumber);
-
-                //reset stuff - because there could be more cases on the line
+                schemaEntry.End = (i, j);
+                schemaEntry.Entry = currentNumber;
+                relevantEntries.Add(schemaEntry);
+                
                 currentNumber = string.Empty;
-                adjacentSymbolFound = false;
+                schemaEntry = new SchemaEntry();
             }
+        }
+
+        if (entry == '*')
+        {
+            schemaEntry.Start = (i, j);
+            schemaEntry.Entry = "*";
+            relevantEntries.Add(schemaEntry);
+            schemaEntry = new SchemaEntry();
         }
     }
 }
 
-Console.WriteLine(sum);
+var sum = relevantEntries.Where(x => x.IsGear)
+    .Select(gear => relevantEntries.Where(x => !x.IsGear)
+        .Where(x => x.Start.startICoordinate == gear.Start.startICoordinate || 
+                    x.Start.startICoordinate == gear.Start.startICoordinate - 1 ||
+                    x.Start.startICoordinate == gear.Start.startICoordinate + 1)
+        .Where(x => x.Start.startJCoordinate == gear.Start.startJCoordinate ||
+                    x.Start.startJCoordinate == gear.Start.startJCoordinate - 1 ||
+                    x.Start.startJCoordinate == gear.Start.startJCoordinate + 1 ||
+                    x.End!.Value.endJCoordinate == gear.Start.startJCoordinate ||
+                    x.End!.Value.endJCoordinate == gear.Start.startJCoordinate - 1 ||
+                    x.End!.Value.endJCoordinate == gear.Start.startJCoordinate + 1)
+        .Select(x => int.Parse(x.Entry))
+        .ToList())
+    .Where(adjacentNumbers => adjacentNumbers.Count == 2)
+    .Sum(adjacentNumbers => adjacentNumbers[0] * adjacentNumbers[1]);
 
-bool IsSymbol(char c) => !char.IsDigit(c) && c != '.';
+Console.WriteLine(sum);
