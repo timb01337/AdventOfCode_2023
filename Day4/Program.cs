@@ -1,20 +1,29 @@
-﻿var lines = File.ReadLines(@"E:\Dev\AdventOfCode_2023\Day4\easyInput.txt").ToList();
+﻿var lines = File.ReadLines(@"E:\Dev\AdventOfCode_2023\Day4\Input.txt").ToList();
 
 //Idee: die karte 1 gewinnt jedes mal die karten 1 - 5
 //-> die karte 2 gewinnt jedes mal die karten 3 und 4
 
 
-
 //key = card number
 //value = amount one by card
 var singleCardValue = new Dictionary<int, int>();
+var totalCardValue = new Dictionary<int, int>();
 
 for (var i = 0; i < lines.Count; i++)
+{
     singleCardValue.Add(i + 1, CountWinningNumbers(GetWinningNumbers(lines[i]), GetNumbersOnCard(lines[i])));
+    totalCardValue.Add(i + 1, 0);
+}
+
 
 //populate the dictionary
 var cardCopyCountDict = singleCardValue.ToDictionary(entry => entry.Key, entry => 1);
 
+
+
+//loop over every single card
+//key = card (as integer 1-6)
+//value = value of a single card
 foreach (var entry in singleCardValue)
 {
     //check how many cards we won
@@ -22,30 +31,21 @@ foreach (var entry in singleCardValue)
 
     if (amountOfCardsWon > 0)
     {
-        //the next cards index where we start iterating
-        var nextIndex = entry.Key + 1;
-
-        Console.WriteLine($"We are now looking at card {entry.Key}");
-        
-        //the next X cards (amountOfCardsWon) we need to count the copies
-        for (var i = nextIndex; i < nextIndex + amountOfCardsWon; i++)
+        //loop over the amount of copies we have
+        for (var j = 0; j < cardCopyCountDict[entry.Key]; j++)
         {
-            Console.WriteLine($"We added one copy to Card {i}");
-            cardCopyCountDict[i] += 1;
+            var nextIndex = entry.Key + 1;
+            //the next X cards (amountOfCardsWon) we need to count the copies
+            for (var i = nextIndex; i < nextIndex + amountOfCardsWon; i++) 
+                //increment copy count by one for each card we won
+                cardCopyCountDict[i]++;
         }
-
-        Console.WriteLine("-------------");
     }
 }
 
-// you end up with 1 instance of card 1
-// 2 instances of card 2
-// 4 instances of card 3
-// 8 instances of card 4
-// 14 instances of card 5
-// and 1 instance of card 6
 
-var sum = cardCopyCountDict.Sum(entry => singleCardValue[entry.Key] * entry.Value);
+var sum = cardCopyCountDict.Sum(x => x.Value);
+
 
 Console.WriteLine($"Ich zähle die kopien, denn ich bin ein Kopierer: {sum}");
 return;
