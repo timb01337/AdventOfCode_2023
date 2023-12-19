@@ -1,7 +1,5 @@
 ﻿var lines = File.ReadLines(@"C:\Daten\repos\AdventOfCode_2023\Day5\easyInput.txt").ToList();
 
-var originalSeeds = lines[0].Split(':')[1].Trim().Split(' ').Select(seed => long.Parse(seed)).ToList();
-
 List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> seedToSoilMap = new();
 List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> soilToFertilizerMap = new();
 List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> fertilizerToWaterMap = new();
@@ -130,22 +128,6 @@ foreach (var line in lines)
     }
 }
 
-//part 1
-// foreach (var seed in originalSeeds)
-// {
-//     //is my seed affected by changes made in the map
-//     //check if any source range start + range length contains my seed
-//     var seedToSoilResult = CalculateConversion(seedToSoilMap, seed);
-//     var soilToFertilizerResult = CalculateConversion(soilToFertilizerMap, seedToSoilResult);
-//     var fertilizerToWaterResult = CalculateConversion(fertilizerToWaterMap, soilToFertilizerResult);
-//     var waterToLightResult = CalculateConversion(waterToLightMap, fertilizerToWaterResult);
-//     var lightToTemperatureResult = CalculateConversion(lightToTemperatureMap, waterToLightResult);
-//     var temperateToHumidityResult = CalculateConversion(temperatureToHumidityMap, lightToTemperatureResult);
-//     var humidityToLocationResult = CalculateConversion(humidityToLocationMap, temperateToHumidityResult);
-//
-//     minLocation = humidityToLocationResult < minLocation ? humidityToLocationResult : minLocation;
-// }
-
 long v1start = 515785082, v1end = v1start + 87905039;
 long v2start = 2104518691, v2end = v2start + 503149843;
 long v3start = 720333403, v3end = v3start + 385234193;
@@ -159,7 +141,7 @@ long v10start = 4055128129, v10end = v10start + 9498708;
 
 
 //just loop and check from location to seed until we found the lowest location
-for (long i = 0; i < long.MaxValue; i++)
+for (long i = 4153809; i < long.MaxValue; i++)
 {
     var locationToHumidityResult = CalculateConversion(humidityToLocationMap, i);
     var humidityToTemperatureResult = CalculateConversion(temperatureToHumidityMap, locationToHumidityResult);
