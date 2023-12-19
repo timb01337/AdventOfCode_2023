@@ -1,6 +1,17 @@
-﻿var lines = File.ReadLines(@"E:\Dev\AdventOfCode_2023\Day5\input.txt").ToList();
+﻿var lines = File.ReadLines(@"C:\Daten\repos\AdventOfCode_2023\Day5\easyInput.txt").ToList();
 
-var seeds = lines[0].Split(':')[1].Trim().Split(' ').Select(seed => long.Parse(seed)).ToList();
+var originalSeeds = lines[0].Split(':')[1].Trim().Split(' ').Select(seed => long.Parse(seed)).ToList();
+var allSeeds = new List<long>();
+
+for (var i = 0; i < originalSeeds.Count; i++)
+{
+    if (i % 2 != 0)
+    {
+        for (var j = 0; j < originalSeeds[i]; j++)
+            allSeeds.Add(originalSeeds[i - 1] + j);
+    }
+}
+
 
 List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> seedToSoilMap = new();
 List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> soilToFertilizerMap = new();
@@ -130,39 +141,59 @@ foreach (var line in lines)
     }
 }
 
-var locationResults = new List<long>();
+var minLocation = long.MaxValue;
 
-foreach (var seed in seeds)
+//part 1
+// foreach (var seed in originalSeeds)
+// {
+//     //is my seed affected by changes made in the map
+//     //check if any source range start + range length contains my seed
+//     var seedToSoilResult = CalculateConversion(seedToSoilMap, seed);
+//     var soilToFertilizerResult = CalculateConversion(soilToFertilizerMap, seedToSoilResult);
+//     var fertilizerToWaterResult = CalculateConversion(fertilizerToWaterMap, soilToFertilizerResult);
+//     var waterToLightResult = CalculateConversion(waterToLightMap, fertilizerToWaterResult);
+//     var lightToTemperatureResult = CalculateConversion(lightToTemperatureMap, waterToLightResult);
+//     var temperateToHumidityResult = CalculateConversion(temperatureToHumidityMap, lightToTemperatureResult);
+//     var humidityToLocationResult = CalculateConversion(humidityToLocationMap, temperateToHumidityResult);
+//
+//     minLocation = humidityToLocationResult < minLocation ? humidityToLocationResult : minLocation;
+// }
+
+
+//we'll never loop over the whole thing! we stop as soon as we found the lowest possible entry
+for (var i = 0; i < allSeeds.Count; i++)
 {
-    //is my seed affected by changes made in the map
-    //check if any source range start + range length contains my seed
-    var seedToSoilResult = CalculateConversion(seedToSoilMap, seed);
-    var soilToFertilizerResult = CalculateConversion(soilToFertilizerMap, seedToSoilResult);
-    var fertilizerToWaterResult = CalculateConversion(fertilizerToWaterMap, soilToFertilizerResult);
-    var waterToLightResult = CalculateConversion(waterToLightMap, fertilizerToWaterResult);
-    var lightToTemperatureResult = CalculateConversion(lightToTemperatureMap, waterToLightResult);
-    var temperateToHumidityResult = CalculateConversion(temperatureToHumidityMap, lightToTemperatureResult);
-    var humidityToLocationResult = CalculateConversion(humidityToLocationMap, temperateToHumidityResult);
     
-    locationResults.Add(humidityToLocationResult);
+     var locationToHumidityResult = CalculateConversion(humidityToLocationMap, 79);
+
+     Console.WriteLine(locationToHumidityResult);
+     
+     // var temperateToHumidityResult = CalculateConversion(temperatureToHumidityMap, lightToTemperatureResult);
+     // var lightToTemperatureResult = CalculateConversion(lightToTemperatureMap, waterToLightResult);
+     // var waterToLightResult = CalculateConversion(waterToLightMap, fertilizerToWaterResult);
+     // var fertilizerToWaterResult = CalculateConversion(fertilizerToWaterMap, soilToFertilizerResult);
+     // var soilToFertilizerResult = CalculateConversion(soilToFertilizerMap, seedToSoilResult);
+     //     var seedToSoilResult = CalculateConversion(seedToSoilMap, seed);
 }
 
-Console.WriteLine(locationResults.Min());
 
-long CalculateConversion(IEnumerable<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> sourceMap, long seed)
+
+Console.WriteLine(minLocation);
+
+long CalculateConversion(IEnumerable<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> sourceMap, long destinationValue)
 {
-    var howToConversionEntry = sourceMap.FirstOrDefault(x => x.sourceRangeStart <= seed
-                                                            && x.sourceRangeStart + x.rangeLength >= seed);
+    var howToConversionEntry = sourceMap.FirstOrDefault(x => x.destinationRangeStart <= destinationValue
+                                                            && x.destinationRangeStart + x.rangeLength >= destinationValue);
 
-    long destinationValue;
+    long sourceValue;
     
     if (!howToConversionEntry.Equals(default))
     {
-        var delta = howToConversionEntry.destinationRangeStart - howToConversionEntry.sourceRangeStart;
-        destinationValue = seed + delta;
+        var delta = howToConversionEntry.sourceRangeStart - howToConversionEntry.destinationRangeStart;
+        sourceValue = destinationValue + delta;
     }
     else
-        destinationValue = seed;
+        sourceValue = destinationValue;
 
-    return destinationValue;
+    return sourceValue;
 }
