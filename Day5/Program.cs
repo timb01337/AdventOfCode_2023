@@ -1,12 +1,10 @@
-﻿var lines = File.ReadLines(@"C:\Daten\repos\AdventOfCode_2023\Day5\easyInput.txt").ToList();
+﻿using Day5;
 
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> seedToSoilMap = new();
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> soilToFertilizerMap = new();
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> fertilizerToWaterMap = new();
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> waterToLightMap = new();
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> lightToTemperatureMap = new();
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> temperatureToHumidityMap = new();
-List<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> humidityToLocationMap = new();
+var lines = File.ReadLines(@"C:\Daten\repos\AdventOfCode_2023\Day5\easyInput.txt").ToList();
+var seeds = lines[0].Split(':')[1].Trim().Split(' ').Select(x => long.Parse(x)).ToArray();
+var seedScopes = new List<SeedScope>();
+var allMappings = Enumerable.Range(0, 7).Select(_ => new List<Map>()).ToArray();
+
 
 bool seedToSoilMapFound = false,
     soilToFertilizerMapFound = false,
@@ -16,6 +14,7 @@ bool seedToSoilMapFound = false,
     temperatureToHumidityMapFound = false,
     humidityToLocationMapFound = false;
 
+//create all the mappings
 foreach (var line in lines)
 {
     if (seedToSoilMapFound)
@@ -27,7 +26,7 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        seedToSoilMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[0].Add(new Map("seed-to-soil-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
     }
 
     if (soilToFertilizerMapFound)
@@ -39,7 +38,8 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        soilToFertilizerMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[1].Add(new Map("soil-to-fertilizer-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+
     }
 
     if (fertilizerToWaterMapFound)
@@ -51,7 +51,7 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        fertilizerToWaterMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[2].Add(new Map("fertilizer-to-water-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
     }
 
     if (waterToLightMapFound)
@@ -63,7 +63,8 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        waterToLightMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[3].Add(new Map("water-to-light-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+
     }
 
     if (lightToTemperatureMapFound)
@@ -75,7 +76,8 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        lightToTemperatureMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[4].Add(new Map("light-to-temperature-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+
     }
 
     if (temperatureToHumidityMapFound)
@@ -87,7 +89,8 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        temperatureToHumidityMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[5].Add(new Map("temperature-to-humidity-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+
     }
 
     if (humidityToLocationMapFound)
@@ -99,7 +102,7 @@ foreach (var line in lines)
         }
 
         var split = line.Split(' ');
-        humidityToLocationMap.Add((long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
+        allMappings[6].Add(new Map("humidity-to-location-map", long.Parse(split[0]), long.Parse(split[1]), long.Parse(split[2])));
     }
 
     switch (line)
@@ -128,55 +131,62 @@ foreach (var line in lines)
     }
 }
 
-long v1start = 515785082, v1end = v1start + 87905039;
-long v2start = 2104518691, v2end = v2start + 503149843;
-long v3start = 720333403, v3end = v3start + 385234193;
-long v4start = 1357904101, v4end = v4start + 283386167;
-long v5start = 93533455, v5end = v5start + 128569683;
-long v6start = 2844655470, v6end = v6start + 24994629;
-long v7start = 3934515023, v7end = v7start + 67327818;
-long v8start = 2655687716, v8end = v8start + 8403417;
-long v9start = 3120497449, v9end = v9start + 107756881;
-long v10start = 4055128129, v10end = v10start + 9498708;
+//create the initial seed scopes
+for (var i = 0; i < seeds.Length - 1; i += 2)
+    seedScopes.Add(SeedScope.CreateSeedScope(seeds[i], seeds[i + 1]));
 
 
-//just loop and check from location to seed until we found the lowest location
-for (long i = 4153809; i < long.MaxValue; i++)
+var currentSeedScopes = new List<SeedScope>(seedScopes);
+
+//iterate over all mappings (f.e. the seed to soil map)
+foreach (var maps in allMappings)
 {
-    var locationToHumidityResult = CalculateConversion(humidityToLocationMap, i);
-    var humidityToTemperatureResult = CalculateConversion(temperatureToHumidityMap, locationToHumidityResult);
-    var temperatureToLightResult = CalculateConversion(lightToTemperatureMap, humidityToTemperatureResult);
-    var lightToWaterResult = CalculateConversion(waterToLightMap, temperatureToLightResult);
-    var waterToFertilizerResult = CalculateConversion(fertilizerToWaterMap, lightToWaterResult);
-    var fertilizerToSoilResult = CalculateConversion(soilToFertilizerMap, waterToFertilizerResult);
-    var seed = CalculateConversion(seedToSoilMap, fertilizerToSoilResult);
-
-    if (seed >= v1start && seed <= v1end ||
-        seed >= v2start && seed <= v2end ||
-        seed >= v3start && seed <= v3end ||
-        seed >= v4start && seed <= v4end ||
-        seed >= v5start && seed <= v5end ||
-        seed >= v6start && seed <= v6end ||
-        seed >= v7start && seed <= v7end ||
-        seed >= v8start && seed <= v8end ||
-        seed >= v9start && seed <= v9end ||
-        seed >= v10start && seed <= v10end)
-    {
-        Console.WriteLine($"RESULT SEED: {seed} AT LOCATION {i}");
-        break;
-    }
-
-    Console.WriteLine(i);
-}
-
-
-long CalculateConversion(IEnumerable<(long destinationRangeStart, long sourceRangeStart, long rangeLength)> sourceMap, long destinationValue)
-{
-    var howToConversionEntry = sourceMap.FirstOrDefault(x => x.destinationRangeStart <= destinationValue
-                                                             && x.destinationRangeStart + x.rangeLength >= destinationValue);
+    var newlyCalculatedScopes = new List<SeedScope>();
     
-    if (!howToConversionEntry.Equals(default))
-        return destinationValue + howToConversionEntry.sourceRangeStart - howToConversionEntry.destinationRangeStart;
+    //iterate over the maps entries (one line from the mapping)
+    foreach (var mappingEntry in maps)
+    {
+        //now all seed scopes gets processed
+        //we need to loop from last to first entry, cauze there will be some deletions
+        for (var i = currentSeedScopes.Count - 1; i >= 0; i--)
+        {
+            var currentSeedScope = currentSeedScopes[i];
+            
+            //if the current scope somehow overlaps with the mapping we're looking at,
+            //it's relevant and we most likely wanna manipulate it
+            if (currentSeedScope.StartOfScope < mappingEntry.SourceEnd 
+                && currentSeedScope.EndOfScope > mappingEntry.SourceStart)
+            {
+                currentSeedScopes.RemoveAt(i);
+                
+                //calculate the boundaries of the new seed scope
+                //we wanna narrow down the new scope to the point where we only have values, which are relevant
+                //for the start of the new scope we use either the start of the mapping or or the start of the scope (which is bigger)
+                var newSeedScopeStart = Math.Max(mappingEntry.SourceStart, currentSeedScope.StartOfScope);
+                //the end of the new scope will be the smaller of the two: mapping end or the end of the seed scope
+                var newSeedScopeEnd = Math.Min(mappingEntry.SourceEnd, currentSeedScope.EndOfScope);
 
-    return destinationValue;
+                
+                //imagine the current scope starts at 50 and the newly calculated scope starts at 55
+                if (currentSeedScope.StartOfScope < newSeedScopeStart)
+                {
+                    //we create a new scope starting at 50
+                    newlyCalculatedScopes.Add(SeedScope.CreateSeedScope(currentSeedScope.StartOfScope, newSeedScopeStart - 1));
+                }
+
+                if (currentSeedScope.EndOfScope > newSeedScopeEnd)
+                {
+                    newlyCalculatedScopes.Add(SeedScope.CreateSeedScope(newSeedScopeEnd + 1, currentSeedScope.EndOfScope));
+                }
+
+                newlyCalculatedScopes.Add(SeedScope.CreateSeedScope(newSeedScopeStart + mappingEntry.Offset, newSeedScopeEnd + mappingEntry.Offset));
+            }
+        }
+    } 
+    
+    currentSeedScopes.AddRange(newlyCalculatedScopes);
+    
 }
+
+Console.WriteLine(currentSeedScopes.Min(x => x.StartOfScope));
+
