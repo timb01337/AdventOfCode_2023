@@ -165,20 +165,20 @@ foreach (var maps in allMappings)
                 var newSeedScopeStart = Math.Max(mappingEntry.SourceStart, currentSeedScope.StartOfScope);
                 //the end of the new scope will be the smaller of the two: mapping end or the end of the seed scope
                 var newSeedScopeEnd = Math.Min(mappingEntry.SourceEnd, currentSeedScope.EndOfScope);
-
                 
-                //imagine the current scope starts at 50 and the newly calculated scope starts at 55
                 if (currentSeedScope.StartOfScope < newSeedScopeStart)
                 {
-                    //we create a new scope starting at 50
+                    //the part at the beginning which we did "cut off" is a own "sub scope" now
                     newlyCalculatedScopes.Add(SeedScope.CreateSeedScope(currentSeedScope.StartOfScope, newSeedScopeStart - 1));
                 }
 
                 if (currentSeedScope.EndOfScope > newSeedScopeEnd)
                 {
+                    //create a scope for the part we just "cut off" at the end
                     newlyCalculatedScopes.Add(SeedScope.CreateSeedScope(newSeedScopeEnd + 1, currentSeedScope.EndOfScope));
                 }
 
+                //create the new scope
                 newlyCalculatedScopes.Add(SeedScope.CreateSeedScope(newSeedScopeStart + mappingEntry.Offset, newSeedScopeEnd + mappingEntry.Offset));
             }
         }
