@@ -2,7 +2,7 @@
 
 public class SeedScope
 {
-    private SeedScope(long startOfScope, long lengthOfScope)
+    public SeedScope(long startOfScope, long lengthOfScope)
     {
         StartOfScope = startOfScope;
         LengthOfScope = lengthOfScope;
