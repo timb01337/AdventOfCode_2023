@@ -3,24 +3,24 @@
 public class HandCards
 {
     private Dictionary<char, int> _cardCountDictionary;
-    
+
     private static Dictionary<char, string> _cardValues = new()
     {
-        {'2', "10"},
-        {'3', "11"},
-        {'4', "12"},
-        {'5', "13"},
-        {'6', "14"},
-        {'7', "15"},
-        {'8', "16"},
-        {'9', "17"},
-        {'T', "18"},
-        {'J', "19"},
+        {'J', "10"},
+        {'2', "11"},
+        {'3', "12"},
+        {'4', "13"},
+        {'5', "14"},
+        {'6', "15"},
+        {'7', "16"},
+        {'8', "17"},
+        {'9', "18"},
+        {'T', "19"},
         {'Q', "20"},
         {'K', "21"},
         {'A', "22"}
     };
-    
+
     public HandCards(string allHandCards, int value)
     {
         Id = allHandCards;
@@ -30,12 +30,17 @@ public class HandCards
         Card3Value = int.Parse(_cardValues[allHandCards[2]]);
         Card4Value = int.Parse(_cardValues[allHandCards[3]]);
         Card5Value = int.Parse(_cardValues[allHandCards[4]]);
-        OrderedHandValue = long.Parse(_cardValues[allHandCards[0]] + _cardValues[allHandCards[1]] + 
+        //this won't change for part two because it's only used for deciding equal hands
+        OrderedHandValue = long.Parse(_cardValues[allHandCards[0]] + _cardValues[allHandCards[1]] +
                                       _cardValues[allHandCards[2]] + _cardValues[allHandCards[3]] +
                                       _cardValues[allHandCards[4]]);
-        
-        _cardCountDictionary = InitializeCardCountDict(allHandCards);
+
+        if (allHandCards.Contains('J'))
+            _cardCountDictionary = InitializeCardCountDictWithJoker(allHandCards);
+        else
+            _cardCountDictionary = InitializeCardCountDict(allHandCards);
     }
+
     public string Id { get; set; }
     public int Stake { get; set; }
     public int Card1Value { get; set; }
@@ -48,7 +53,7 @@ public class HandCards
 
     public int GetStrengthOfHand()
     {
-        if (IsFiveOfAKind()) 
+        if (IsFiveOfAKind())
             return 700;
         if (IsFourOfAKind())
             return 600;
@@ -66,13 +71,13 @@ public class HandCards
         throw new InvalidOperationException("Should never happen, each hand should be resolved as one" +
                                             $" of the above. Hand causing the error: {Id}");
     }
- 
+
     private bool IsFiveOfAKind() => _cardCountDictionary.First().Value == 5;
-    
+
     private bool IsFourOfAKind() => _cardCountDictionary.First().Value == 4;
-    
+
     private bool IsFullHouse() => _cardCountDictionary.Count == 2;
-    
+
     private bool IsThreeOfAKind() => _cardCountDictionary.First().Value == 3;
 
     private bool IsTwoPair() => _cardCountDictionary.First().Value == 2 && _cardCountDictionary.Skip(1).First().Value == 2;
@@ -81,12 +86,28 @@ public class HandCards
 
     private bool IsHighCard() => _cardCountDictionary.Count == 5;
 
-    
-    
+
     private static Dictionary<char, int> InitializeCardCountDict(string allHandCards)
         => allHandCards
             .Distinct()
             .ToDictionary(entry => entry, entry => allHandCards.Count(x => x == entry))
             .OrderByDescending(x => x.Value)
             .ToDictionary(k => k.Key, v => v.Value);
+
+    private Dictionary<char, int> InitializeCardCountDictWithJoker(string allHandCars)
+    {
+        var numberOfJokers = allHandCars.Count(x => x == 'J');
+        var handWithoutJokers = allHandCars.Replace("J", string.Empty);
+        
+        var currentHandEvaluation = handWithoutJokers.Distinct()
+            .ToDictionary(entry => entry, entry => handWithoutJokers.Count(x => x == entry))
+            .OrderByDescending(x => x.Value)
+            .ToDictionary(k => k.Key, v => v.Value);
+
+        Console.WriteLine();
+        
+
+        throw new NotImplementedException();
+    }
+    
 }
