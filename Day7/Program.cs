@@ -1,6 +1,6 @@
 ﻿using Day7;
 
-var lines = File.ReadLines("C:\\Daten\\repos\\AdventOfCode_2023\\Day7\\easyInput.txt").ToList();
+var lines = File.ReadLines("C:\\Daten\\repos\\AdventOfCode_2023\\Day7\\input.txt").ToList();
 
 
 var handStrengthMapping = new Dictionary<HandCards, int>();
